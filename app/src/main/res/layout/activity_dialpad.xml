@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/number_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="phone"
+        android:textSize="24sp"
+        android:gravity="center" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="3">
+
+        <Button android:id="@+id/btn_1" android:text="1" />
+        <Button android:id="@+id/btn_2" android:text="2" />
+        <Button android:id="@+id/btn_3" android:text="3" />
+        <Button android:id="@+id/btn_4" android:text="4" />
+        <Button android:id="@+id/btn_5" android:text="5" />
+        <Button android:id="@+id/btn_6" android:text="6" />
+        <Button android:id="@+id/btn_7" android:text="7" />
+        <Button android:id="@+id/btn_8" android:text="8" />
+        <Button android:id="@+id/btn_9" android:text="9" />
+        <Button android:id="@+id/btn_star" android:text="*" />
+        <Button android:id="@+id/btn_0" android:text="0" />
+        <Button android:id="@+id/btn_hash" android:text="#" />
+    </GridLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <ImageButton
+            android:id="@+id/btn_call"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_call" />
+
+        <ImageButton
+            android:id="@+id/btn_backspace"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_backspace" />
+    </LinearLayout>
+
+</LinearLayout >
