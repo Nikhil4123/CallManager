@@ -1,11 +1,11 @@
-package com.example.callog
-
-import CallDetails
+package com.example.callog  // Changed from com.example.calllog
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
 import android.provider.CallLog
 import android.provider.ContactsContract
@@ -20,15 +20,7 @@ import com.example.calllog.ListAdapter
 import java.util.Date
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var listView: ListView
-
-    private val PERMISSIONS = arrayOf(
-        Manifest.permission.READ_CALL_LOG,
-        Manifest.permission.READ_CONTACTS,
-        Manifest.permission.CALL_PHONE,
-        Manifest.permission.READ_PHONE_STATE
-    )
-    private val PERMISSION_REQUEST_CODE = 123
+    private val requestReadLog = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,56 +33,30 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        listView = findViewById(R.id.list_item)
-        checkAndRequestPermissions()
-    }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED ||
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
 
-    private fun checkAndRequestPermissions() {
-        val permissionsToRequest = mutableListOf<String>()
-
-        for (permission in PERMISSIONS) {
-            if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                permissionsToRequest.add(permission)
-            }
-        }
-
-        if (permissionsToRequest.isEmpty()) {
-            // All permissions are granted, load data
-            loadData()
-        } else {
-            // Request required permissions
             ActivityCompat.requestPermissions(
                 this,
-                permissionsToRequest.toTypedArray(),
-                PERMISSION_REQUEST_CODE
+                arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.READ_CONTACTS),
+                requestReadLog
             )
+        } else {
+            loadData()
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                // All permissions granted
-                loadData()
-            } else {
-                // Show a more informative message
-                Toast.makeText(
-                    this,
-                    "This app needs call log and contacts permissions to function properly",
-                    Toast.LENGTH_LONG
-                ).show()
-                // Give user another chance to grant permissions
-                checkAndRequestPermissions()
-            }
+        if (requestCode == requestReadLog && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            loadData()
+        } else {
+            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun loadData() {
+        val listView: ListView = findViewById(R.id.list_item) // Ensure list_view exists in XML
         val list = getCallsDetails(this)
         val adapter = ListAdapter(this, list)
         listView.adapter = adapter
@@ -101,13 +67,7 @@ class MainActivity : AppCompatActivity() {
         val contentUri = CallLog.Calls.CONTENT_URI
 
         try {
-            val cursor: Cursor? = context.contentResolver.query(
-                contentUri,
-                null,
-                null,
-                null,
-                CallLog.Calls.DATE + " DESC"
-            )
+            val cursor: Cursor? = context.contentResolver.query(contentUri, null, null, null, CallLog.Calls.DATE + " DESC")
 
             cursor?.use {
                 val numberIndex = it.getColumnIndex(CallLog.Calls.NUMBER)
@@ -128,6 +88,8 @@ class MainActivity : AppCompatActivity() {
                     val callDate = it.getLong(dateIndex)
                     val callDayTime = Date(callDate).toString()
                     val callDuration = it.getString(durationIndex) ?: "0"
+
+                    // Get Caller Name from Contacts
                     val callerName = getCallerName(context, phoneNumber)
 
                     callDetailsList.add(
@@ -142,12 +104,13 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         } catch (e: SecurityException) {
-            Toast.makeText(context, "Permission denied for call logs", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "User denied permission", Toast.LENGTH_SHORT).show()
         }
 
         return callDetailsList
     }
 
+    // 🔹 Function to Get Caller Name from Contacts
     @SuppressLint("Range")
     private fun getCallerName(context: Context, phoneNumber: String): String {
         val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
@@ -169,4 +132,20 @@ class MainActivity : AppCompatActivity() {
 
         return "Unknown"
     }
+
+    fun makeCall(number: String) {
+        val intent = Intent(Intent.ACTION_DIAL).apply {
+            data = Uri.parse("tel:$number")
+        }
+        startActivity(intent)
+    }
 }
+
+// Model Class for Call Details
+data class CallDetails(
+    val callerName: String,
+    val phoneNumber: String,
+    val callDuration: String,
+    val callType: String,
+    val callDate: String
+)

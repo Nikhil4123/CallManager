@@ -1,6 +1,5 @@
 package com.example.calllog  // Changed to match MainActivity package
 
-import CallDetails
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +10,7 @@ import com.example.callog.R
 
 class ListAdapter(
     private val context: Context,
-    private val list: ArrayList<CallDetails>
+    private val list: ArrayList<com.example.callog.CallDetails>
 ) : BaseAdapter() {
 
     override fun getCount(): Int = list.size
